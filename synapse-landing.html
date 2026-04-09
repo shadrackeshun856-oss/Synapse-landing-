@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYNAPSE — AI Automation, Rebuilt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f0e8;
+    --acid: #c8ff00;
+    --rust: #e8440a;
+    --mist: #d4cfc6;
+    --mid: #6b6560;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    mix-blend-mode: multiply;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+  }
+
+  .logo span {
+    color: var(--rust);
+  }
+
+  nav a {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mid);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--rust); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-left {
+    padding: 160px 48px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--rust);
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 9vw, 130px);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.35s forwards;
+  }
+
+  h1 .line-accent {
+    color: var(--rust);
+    display: block;
+  }
+
+  h1 .line-outline {
+    -webkit-text-stroke: 2px var(--ink);
+    color: transparent;
+    display: block;
+  }
+
+  .hero-sub {
+    margin-top: 32px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--mid);
+    max-width: 380px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+
+  /* WAITLIST FORM */
+  .waitlist-form {
+    margin-top: 48px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.65s forwards;
+  }
+
+  .form-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 0;
+    border: 1.5px solid var(--ink);
+    max-width: 440px;
+  }
+
+  .input-row input {
+    flex: 1;
+    padding: 16px 20px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    font-weight: 300;
+  }
+
+  .input-row input::placeholder { color: var(--mist); }
+
+  .btn-join {
+    padding: 16px 28px;
+    background: var(--ink);
+    color: var(--acid);
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-join:hover {
+    background: var(--rust);
+    color: var(--paper);
+  }
+
+  .form-note {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--mist);
+    letter-spacing: 0.05em;
+  }
+
+  .success-msg {
+    display: none;
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: var(--ink);
+    color: var(--acid);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    max-width: 440px;
+  }
+
+  /* HERO RIGHT */
+  .hero-right {
+    position: relative;
+    background: var(--ink);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-right::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 60% 40%, #e8440a22, transparent 60%),
+                radial-gradient(ellipse at 30% 80%, #c8ff0011, transparent 50%);
+  }
+
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(245,240,232,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,240,232,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: pulse 6s ease-in-out infinite alternate;
+  }
+
+  .orb-1 {
+    width: 300px; height: 300px;
+    background: #e8440a;
+    top: 10%; left: 10%;
+    opacity: 0.25;
+  }
+
+  .orb-2 {
+    width: 200px; height: 200px;
+    background: #c8ff00;
+    bottom: 15%; right: 15%;
+    opacity: 0.18;
+    animation-delay: 2s;
+  }
+
+  .hero-stat-block {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: var(--paper);
+  }
+
+  .big-stat {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--acid);
+    display: block;
+    animation: countUp 2s 1s ease-out forwards;
+    opacity: 0;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.5);
+    margin-top: 8px;
+  }
+
+  .stat-sub {
+    font-size: 13px;
+    color: rgba(245,240,232,0.3);
+    margin-top: 24px;
+    max-width: 200px;
+    line-height: 1.6;
+  }
+
+  /* MARQUEE */
+  .marquee-wrap {
+    background: var(--ink);
+    padding: 18px 0;
+    overflow: hidden;
+    border-top: 1px solid #222;
+    border-bottom: 1px solid #222;
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 48px;
+    width: max-content;
+    animation: marquee 18s linear infinite;
+  }
+
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: var(--mist);
+    white-space: nowrap;
+  }
+
+  .marquee-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--rust);
+    flex-shrink: 0;
+  }
+
+  /* SERVICES */
+  .services {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 80px;
+    border-bottom: 1px solid var(--mist);
+    padding-bottom: 32px;
+  }
+
+  .section-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: var(--mist);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 4vw, 56px);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1.5px solid var(--ink);
+  }
+
+  .service-card {
+    padding: 48px 36px;
+    border-right: 1.5px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .service-card:last-child { border-right: none; }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--rust);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-card:hover { background: #0a0a0a04; }
+
+  .service-icon {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+
+  .service-num {
+    position: absolute;
+    top: 20px; right: 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: var(--mist);
+    line-height: 1;
+    opacity: 0.4;
+  }
+
+  .service-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    letter-spacing: 0.04em;
+    margin-bottom: 16px;
+  }
+
+  .service-desc {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--mid);
+  }
+
+  /* HOW IT WORKS */
+  .how {
+    background: var(--ink);
+    padding: 120px 48px;
+    color: var(--paper);
+  }
+
+  .how-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .how .section-num { color: #222; }
+  .how .section-title { color: var(--paper); }
+  .how .section-header { border-bottom-color: #333; }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 48px;
+    position: relative;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: 36px;
+    right: 36px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--rust), transparent);
+    z-index: 0;
+  }
+
+  .step {
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-dot {
+    width: 56px; height: 56px;
+    border: 1.5px solid var(--rust);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--rust);
+    margin-bottom: 28px;
+    background: var(--ink);
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .step:hover .step-dot {
+    background: var(--rust);
+    color: var(--paper);
+  }
+
+  .step-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.06em;
+    color: var(--paper);
+    margin-bottom: 12px;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    line-height: 1.75;
+    color: #7a7570;
+  }
+
+  /* WAITLIST BOTTOM */
+  .bottom-waitlist {
+    padding: 120px 48px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .bottom-waitlist h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 7vw, 96px);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    margin-bottom: 24px;
+  }
+
+  .bottom-waitlist h2 em {
+    font-style: normal;
+    color: var(--rust);
+  }
+
+  .bottom-waitlist p {
+    font-size: 16px;
+    color: var(--mid);
+    line-height: 1.7;
+    margin-bottom: 48px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .bottom-form .input-row {
+    margin: 0 auto;
+    max-width: 480px;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1.5px solid var(--mist);
+    padding: 32px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p {
+    font-size: 12px;
+    color: var(--mist);
+    letter-spacing: 0.08em;
+  }
+
+  footer .logo { font-size: 22px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    from { transform: scale(1); opacity: 0.2; }
+    to   { transform: scale(1.3); opacity: 0.35; }
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { min-height: 300px; }
+    .service-grid { grid-template-columns: 1fr; }
+    .service-card { border-right: none; border-bottom: 1.5px solid var(--ink); }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .steps::before { display: none; }
+    nav { padding: 20px 24px; }
+    .hero-left, .services, .bottom-waitlist { padding-left: 24px; padding-right: 24px; }
+  }
+
+  @media (max-width: 480px) {
+    .steps { grid-template-columns: 1fr; }
+    .input-row { flex-direction: column; }
+    .btn-join { width: 100%; text-align: center; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    footer { flex-direction: column; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">SYN<span>A</span>PSE</div>
+  <a href="#waitlist">Join Waitlist →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">AI Automation Agency — Est. 2025</div>
+    <h1>
+      <span>WORK</span>
+      <span class="line-outline">SMARTER</span>
+      <span class="line-accent">AUTOMATE.</span>
+    </h1>
+    <p class="hero-sub">
+      Synapse builds intelligent automation systems that eliminate repetitive work, connect your tools, and scale your operations — without hiring a full tech team.
+    </p>
+
+    <div class="waitlist-form" id="waitlist">
+      <span class="form-label">Get Early Access</span>
+      <div class="input-row">
+        <input type="email" id="hero-email" placeholder="your@email.com" />
+        <button class="btn-join" onclick="joinWaitlist('hero-email', 'hero-success')">JOIN WAITLIST</button>
+      </div>
+      <p class="form-note">No spam. Ever. Unsubscribe any time.</p>
+      <div class="success-msg" id="hero-success">✓ YOU'RE ON THE LIST. WE'LL BE IN TOUCH.</div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="grid-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="hero-stat-block">
+      <span class="big-stat">80%</span>
+      <div class="stat-label">Of Busywork Eliminated</div>
+      <p class="stat-sub">Average time saved by clients in their first 90 days</p>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="marquee-dot"></span>WORKFLOW AUTOMATION</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>AI AGENTS</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>CRM INTEGRATION</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>DATA PIPELINES</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>DOCUMENT AI</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>EMAIL AUTOMATION</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>CUSTOM CHATBOTS</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>API ORCHESTRATION</div>
+    <!-- repeat for seamless loop -->
+    <div class="marquee-item"><span class="marquee-dot"></span>WORKFLOW AUTOMATION</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>AI AGENTS</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>CRM INTEGRATION</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>DATA PIPELINES</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>DOCUMENT AI</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>EMAIL AUTOMATION</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>CUSTOM CHATBOTS</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>API ORCHESTRATION</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="services">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">WHAT WE BUILD</h2>
+  </div>
+  <div class="service-grid">
+    <div class="service-card">
+      <span class="service-num">01</span>
+      <div class="service-icon">⚡</div>
+      <div class="service-name">Workflow Automation</div>
+      <p class="service-desc">Connect your apps, eliminate manual data entry, and build automated sequences that run 24/7 across your entire stack — from Notion to Salesforce.</p>
+    </div>
+    <div class="service-card">
+      <span class="service-num">02</span>
+      <div class="service-icon">🤖</div>
+      <div class="service-name">Custom AI Agents</div>
+      <p class="service-desc">Intelligent agents that answer customer questions, qualify leads, process documents, and make decisions — trained on your business data.</p>
+    </div>
+    <div class="service-card">
+      <span class="service-num">03</span>
+      <div class="service-icon">🔗</div>
+      <div class="service-name">Systems Integration</div>
+      <p class="service-desc">Stitch together your CRM, ERP, billing, and communication tools into one seamless automated ecosystem with real-time data sync.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="how-inner">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">HOW IT WORKS</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-dot">01</div>
+        <div class="step-title">DISCOVERY CALL</div>
+        <p class="step-desc">We audit your current workflows, identify the highest-ROI automation opportunities, and map out a plan in 60 minutes.</p>
+      </div>
+      <div class="step">
+        <div class="step-dot">02</div>
+        <div class="step-title">CUSTOM BUILD</div>
+        <p class="step-desc">Our team designs and builds automation systems tailored to your exact processes — no one-size-fits-all templates.</p>
+      </div>
+      <div class="step">
+        <div class="step-dot">03</div>
+        <div class="step-title">LIVE IN 2 WEEKS</div>
+        <p class="step-desc">We deploy, test, and hand over fully operational systems. Your team gets trained. You start saving hours immediately.</p>
+      </div>
+      <div class="step">
+        <div class="step-dot">04</div>
+        <div class="step-title">ONGOING SUPPORT</div>
+        <p class="step-desc">We monitor, iterate, and expand your automation layer as your business scales. Always-on support included.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<section class="bottom-waitlist">
+  <h2>READY TO <em>STOP</em> DOING IT MANUALLY?</h2>
+  <p>We're onboarding our first 50 clients at a founding rate. Join the waitlist and we'll reach out within 48 hours.</p>
+  <div class="bottom-form">
+    <div class="input-row">
+      <input type="email" id="bottom-email" placeholder="your@email.com" />
+      <button class="btn-join" onclick="joinWaitlist('bottom-email', 'bottom-success')">RESERVE SPOT</button>
+    </div>
+    <div class="success-msg" id="bottom-success" style="text-align:left">✓ SPOT RESERVED. WE'LL REACH OUT WITHIN 48 HOURS.</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">SYN<span>A</span>PSE</div>
+  <p>© 2025 SYNAPSE AUTOMATION. ALL RIGHTS RESERVED.</p>
+  <p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3058555c5c5f7043495e514043551e5159">[email&#160;protected]</a></p>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const AIRTABLE_TOKEN = 'patcsgTEyi2qZNaPQ.9eb285de90116b6f13641bc80402d70183104021296adcee6bd3fb93d6bc0a11';
+  const AIRTABLE_BASE  = 'appMgIGGSkcHFWVhE';
+  const AIRTABLE_TABLE = 'Waitlist';
+
+  async function joinWaitlist(inputId, successId) {
+    const input = document.getElementById(inputId);
+    const success = document.getElementById(successId);
+    const btn = input.nextElementSibling;
+    const email = input.value.trim();
+
+    if (!email || !email.includes('@')) {
+      input.style.outline = '2px solid #e8440a';
+      input.focus();
+      setTimeout(() => input.style.outline = '', 1200);
+      return;
+    }
+
+    // Show loading state
+    btn.textContent = 'SAVING...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(AIRTABLE_TABLE)}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fields: {
+            Email: email,
+            Date: new Date().toISOString().split('T')[0]
+          }
+        })
+      });
+
+      if (res.ok) {
+        input.closest('.input-row').style.opacity = '0.3';
+        success.style.display = 'block';
+        input.value = '';
+      } else {
+        const err = await res.json();
+        alert('Something went wrong: ' + (err.error?.message || 'Please try again.'));
+        btn.textContent = 'JOIN WAITLIST';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+      btn.textContent = 'JOIN WAITLIST';
+      btn.disabled = false;
+    }
+  }
+
+  // Allow enter key
+  document.querySelectorAll('input[type="email"]').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const btn = inp.nextElementSibling;
+        btn.click();
+      }
+    });
+  });
+
+  // Scroll reveal for service cards
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = `fadeUp 0.7s ${i * 0.1}s forwards`;
+        entry.t
